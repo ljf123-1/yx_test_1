@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 设置</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: '小宇播客 - 设置',
+                activeTab: 'profile', // 设置页面在"我的"选项卡下
+                showMiniPlayer: true
+            });
+            
+            // 创建导航栏
+            const navBar = document.createElement('div');
+            navBar.className = 'flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-[44px] z-10';
+            navBar.innerHTML = `
+                <a href="profile.html" class="text-gray-700">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <h1 class="text-lg font-medium">设置</h1>
+                <div class="w-5"></div> <!-- 占位，保持标题居中 -->
+            `;
+            contentContainer.appendChild(navBar);
+            
+            // 创建设置内容
+            const settingsContent = document.createElement('div');
+            settingsContent.className = 'container py-4';
+            
+            // 账户设置
+            const accountSettings = document.createElement('div');
+            accountSettings.innerHTML = `
+                <h2 class="section-title">账户</h2>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <i class="fas fa-user settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">个人资料</div>
+                            <div class="settings-item-subtitle">编辑你的个人信息</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-bell settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">通知设置</div>
+                            <div class="settings-item-subtitle">管理你的通知偏好</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-shield-alt settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">隐私</div>
+                            <div class="settings-item-subtitle">控制谁可以看到你的活动</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                </div>
+            `;
+            settingsContent.appendChild(accountSettings);
+            
+            // 应用设置
+            const appSettings = document.createElement('div');
+            appSettings.className = 'mt-6';
+            appSettings.innerHTML = `
+                <h2 class="section-title">应用设置</h2>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <i class="fas fa-download settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">下载设置</div>
+                            <div class="settings-item-subtitle">音质和存储管理</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-globe settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">语言</div>
+                            <div class="settings-item-subtitle">简体中文</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-moon settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">深色模式</div>
+                            <div class="settings-item-subtitle">跟随系统</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-sliders-h settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">播放设置</div>
+                            <div class="settings-item-subtitle">音质、自动播放和其他设置</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                </div>
+            `;
+            settingsContent.appendChild(appSettings);
+            
+            // 存储和缓存
+            const storageSettings = document.createElement('div');
+            storageSettings.className = 'mt-6';
+            storageSettings.innerHTML = `
+                <h2 class="section-title">存储和缓存</h2>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <i class="fas fa-trash-alt settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">清除缓存</div>
+                            <div class="settings-item-subtitle">释放存储空间</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                </div>
+            `;
+            settingsContent.appendChild(storageSettings);
+            
+            // 关于和帮助
+            const aboutSettings = document.createElement('div');
+            aboutSettings.className = 'mt-6';
+            aboutSettings.innerHTML = `
+                <h2 class="section-title">关于和帮助</h2>
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <i class="fas fa-question-circle settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">帮助中心</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                    <div class="settings-item">
+                        <i class="fas fa-info-circle settings-icon"></i>
+                        <div class="settings-item-content">
+                            <div class="settings-item-title">关于小宇播客</div>
+                            <div class="settings-item-subtitle">版本 1.0.0</div>
+                        </div>
+                        <i class="fas fa-chevron-right settings-arrow"></i>
+                    </div>
+                </div>
+            `;
+            settingsContent.appendChild(aboutSettings);
+            
+            // 退出登录按钮
+            const logoutButton = document.createElement('div');
+            logoutButton.className = 'mt-8 text-center';
+            logoutButton.innerHTML = `
+                <button class="px-10 py-3 text-red-500 border border-red-500 rounded-lg font-medium">
+                    退出登录
+                </button>
+            `;
+            settingsContent.appendChild(logoutButton);
+            
+            contentContainer.appendChild(settingsContent);
+            
+            // 添加设置项点击事件
+            document.querySelectorAll('.settings-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const title = this.querySelector('.settings-item-title').textContent;
+                    alert(`你点击了"${title}"设置项`);
+                });
+            });
+            
+            // 添加退出登录点击事件
+            logoutButton.querySelector('button').addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    alert('已退出登录');
+                    window.location.href = 'home.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

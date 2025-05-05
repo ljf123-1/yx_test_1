@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 发现</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: '小宇播客 - 发现',
+                activeTab: 'discover',
+                showMiniPlayer: true
+            });
+            
+            // 创建搜索头部
+            const searchHeader = document.createElement('div');
+            searchHeader.className = 'bg-white sticky top-[44px] z-10 shadow-sm';
+            searchHeader.innerHTML = `
+                <div class="p-4">
+                    <div class="relative">
+                        <input type="text" placeholder="搜索播客、主播或剧集" class="w-full bg-gray-100 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                </div>
+            `;
+            
+            // 创建分类选择器
+            const categorySelector = document.createElement('div');
+            categorySelector.className = 'category-chips';
+            categorySelector.innerHTML = window.mockData.categories.map((category, index) => `
+                <div class="category-chip ${index === 0 ? 'active' : ''}" data-category-id="${category.id}">
+                    ${category.name}
+                </div>
+            `).join('');
+            
+            // 添加分类选择器的点击事件
+            categorySelector.addEventListener('click', function(e) {
+                if (e.target.classList.contains('category-chip')) {
+                    // 移除所有active类
+                    document.querySelectorAll('.category-chip').forEach(chip => {
+                        chip.classList.remove('active');
+                    });
+                    
+                    // 添加active类到点击的元素
+                    e.target.classList.add('active');
+                    
+                    // 这里可以添加根据分类筛选播客的逻辑
+                    const categoryId = e.target.getAttribute('data-category-id');
+                    console.log('选择分类:', categoryId);
+                    
+                    // 模拟分类筛选 - 保持原始列表不变
+                    renderPodcastList(window.mockData.recommendedPodcasts.concat(window.mockData.trendingPodcasts));
+                }
+            });
+            
+            searchHeader.appendChild(categorySelector);
+            contentContainer.appendChild(searchHeader);
+            
+            // 创建发现内容容器
+            const discoverContent = document.createElement('div');
+            discoverContent.className = 'container podcast-list-container';
+            contentContainer.appendChild(discoverContent);
+            
+            // 渲染播客列表
+            function renderPodcastList(podcasts) {
+                discoverContent.innerHTML = '';
+                
+                // 添加标题
+                const titleElement = document.createElement('h2');
+                titleElement.className = 'section-title mt-4';
+                titleElement.textContent = '为你推荐的播客';
+                discoverContent.appendChild(titleElement);
+                
+                // 创建播客列表
+                const podcastsContainer = document.createElement('div');
+                podcastsContainer.className = 'podcasts-grid';
+                
+                // 将所有播客数据合并并展示
+                podcasts.forEach(podcast => {
+                    podcastsContainer.appendChild(createPodcastCard(podcast));
+                });
+                
+                discoverContent.appendChild(podcastsContainer);
+            }
+            
+            // 创建播客卡片
+            function createPodcastCard(podcast) {
+                const card = document.createElement('div');
+                card.className = 'podcast-card';
+                
+                card.innerHTML = `
+                    <img src="${podcast.image}" alt="${podcast.title}" class="podcast-image">
+                    <div class="podcast-content">
+                        <h3 class="podcast-title">${podcast.title}</h3>
+                        <p class="podcast-description">${podcast.description}</p>
+                        <div class="podcast-meta">
+                            <span>${podcast.author}</span>
+                            <span><i class="fas fa-headphones"></i> ${podcast.listens}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // 点击卡片跳转到详情页
+                card.addEventListener('click', () => {
+                    window.location.href = `podcast-detail.html?id=${podcast.id}`;
+                });
+                
+                return card;
+            }
+            
+            // 初始渲染 - 显示所有播客
+            renderPodcastList(window.mockData.recommendedPodcasts.concat(window.mockData.trendingPodcasts));
+        });
+    </script>
+</body>
+</html> 

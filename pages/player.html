@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 播放器</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* 播放页面特定样式 */
+        .player-page {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 44px); /* 减去状态栏高度 */
+            background: linear-gradient(to bottom, rgba(79, 70, 229, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+        
+        .player-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .player-cover {
+            width: 70%;
+            max-width: 300px;
+            aspect-ratio: 1/1;
+            margin: 20px auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        .player-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .episode-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--gray-800);
+        }
+        
+        .podcast-title {
+            color: var(--gray-600);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-thumb {
+            left: 30%; /* 模拟播放进度 */
+        }
+        
+        .progress-current {
+            width: 30%; /* 模拟播放进度 */
+        }
+        
+        .player-description {
+            margin-top: 30px;
+            padding: 0 10px;
+            color: var(--gray-700);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .player-date {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 10px;
+        }
+        
+        .playback-speed {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 16px;
+            gap: 10px;
+        }
+        
+        .speed-option {
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+        }
+        
+        .speed-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取剧集ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const episodeId = parseInt(urlParams.get('id')) || 101; // 默认使用ID为101的剧集
+            
+            // 获取剧集数据
+            const episodeData = window.mockData.episodePlayback[episodeId];
+            
+            if (!episodeData) {
+                console.error('未找到剧集数据:', episodeId);
+                return;
+            }
+            
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: episodeData.title,
+                showTabBar: false,
+                showMiniPlayer: false
+            });
+            
+            // 创建播放器页面
+            const playerPage = document.createElement('div');
+            playerPage.className = 'player-page';
+            
+            // 创建导航栏
+            const navBar = document.createElement('div');
+            navBar.className = 'flex items-center justify-between p-4 bg-transparent';
+            navBar.innerHTML = `
+                <a href="javascript:history.back()" class="text-gray-700">
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <h1 class="text-lg font-medium">正在播放</h1>
+                <button class="text-gray-700">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            `;
+            playerPage.appendChild(navBar);
+            
+            // 创建播放器内容
+            const playerContent = document.createElement('div');
+            playerContent.className = 'player-content';
+            
+            // 添加播放器封面
+            const playerCover = document.createElement('img');
+            playerCover.src = episodeData.image;
+            playerCover.alt = episodeData.title;
+            playerCover.className = 'player-cover';
+            playerContent.appendChild(playerCover);
+            
+            // 添加播放器信息
+            const playerInfo = document.createElement('div');
+            playerInfo.className = 'player-info';
+            playerInfo.innerHTML = `
+                <h2 class="episode-title">${episodeData.title}</h2>
+                <p class="podcast-title">${episodeData.podcastTitle}</p>
+            `;
+            playerContent.appendChild(playerInfo);
+            
+            // 添加进度条
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'progress-container';
+            progressContainer.innerHTML = `
+                <div class="progress-bar">
+                    <div class="progress-current"></div>
+                    <div class="progress-thumb" style="left: 30%"></div>
+                </div>
+                <div class="time-info">
+                    <span>${episodeData.currentTime}</span>
+                    <span>${episodeData.duration}</span>
+                </div>
+            `;
+            playerContent.appendChild(progressContainer);
+            
+            // 添加播放控制
+            const playerControls = document.createElement('div');
+            playerControls.className = 'player-controls';
+            playerControls.innerHTML = `
+                <button class="player-control-btn">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="player-control-btn">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button class="player-control-btn play-pause">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="player-control-btn">
+                    <i class="fas fa-forward"></i>
+                </button>
+                <button class="player-control-btn">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            `;
+            playerContent.appendChild(playerControls);
+            
+            // 添加播放速度选项
+            const playbackSpeed = document.createElement('div');
+            playbackSpeed.className = 'playback-speed';
+            playbackSpeed.innerHTML = `
+                <div class="speed-option">0.5x</div>
+                <div class="speed-option">0.75x</div>
+                <div class="speed-option active">1.0x</div>
+                <div class="speed-option">1.25x</div>
+                <div class="speed-option">1.5x</div>
+                <div class="speed-option">2.0x</div>
+            `;
+            playerContent.appendChild(playbackSpeed);
+            
+            // 添加剧集描述
+            const playerDescription = document.createElement('div');
+            playerDescription.className = 'player-description';
+            playerDescription.innerHTML = `
+                <p>${episodeData.description}</p>
+                <p class="player-date">发布日期: ${episodeData.date}</p>
+            `;
+            playerContent.appendChild(playerDescription);
+            
+            playerPage.appendChild(playerContent);
+            contentContainer.appendChild(playerPage);
+            
+            // 添加事件处理
+            // 播放/暂停按钮
+            const playPauseBtn = document.querySelector('.player-control-btn.play-pause');
+            if (playPauseBtn) {
+                playPauseBtn.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    if (icon.classList.contains('fa-play')) {
+                        icon.classList.remove('fa-play');
+                        icon.classList.add('fa-pause');
+                    } else {
+                        icon.classList.remove('fa-pause');
+                        icon.classList.add('fa-play');
+                    }
+                });
+            }
+            
+            // 播放速度选择
+            const speedOptions = document.querySelectorAll('.speed-option');
+            speedOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除所有active类
+                    speedOptions.forEach(opt => opt.classList.remove('active'));
+                    // 添加active类到当前选项
+                    this.classList.add('active');
+                    // 这里可以添加改变播放速度的逻辑
+                    console.log('播放速度设置为:', this.textContent);
+                });
+            });
+            
+            // 进度条交互
+            const progressBar = document.querySelector('.progress-bar');
+            const progressThumb = document.querySelector('.progress-thumb');
+            const progressCurrent = document.querySelector('.progress-current');
+            
+            if (progressBar) {
+                progressBar.addEventListener('click', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const width = rect.width;
+                    const percentage = Math.min(Math.max(x / width, 0), 1);
+                    
+                    // 更新进度条位置
+                    progressThumb.style.left = `${percentage * 100}%`;
+                    progressCurrent.style.width = `${percentage * 100}%`;
+                    
+                    // 这里可以添加音频跳转逻辑
+                    console.log('进度条位置:', percentage);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

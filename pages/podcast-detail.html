@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 播客详情</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取播客ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const podcastId = parseInt(urlParams.get('id')) || 1; // 默认使用ID为1的播客
+            
+            // 获取播客数据
+            const podcastData = window.mockData.podcastDetails[podcastId];
+            
+            if (!podcastData) {
+                console.error('未找到播客数据:', podcastId);
+                return;
+            }
+            
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: podcastData.title,
+                activeTab: '',
+                showTabBar: true,
+                showMiniPlayer: true
+            });
+            
+            // 创建导航栏
+            const navBar = document.createElement('div');
+            navBar.className = 'flex items-center justify-between p-4 bg-white border-b border-gray-200';
+            navBar.innerHTML = `
+                <a href="javascript:history.back()" class="text-gray-700">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <h1 class="text-lg font-medium">播客详情</h1>
+                <button class="text-gray-700">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            `;
+            contentContainer.appendChild(navBar);
+            
+            // 创建播客头部信息
+            const podcastHeader = document.createElement('div');
+            podcastHeader.className = 'podcast-header';
+            podcastHeader.innerHTML = `
+                <img src="${podcastData.image}" alt="${podcastData.title}" class="podcast-header-image">
+                <h2 class="podcast-header-title">${podcastData.title}</h2>
+                <p class="podcast-header-author">${podcastData.author}</p>
+                <p class="text-gray-600 text-sm max-w-md">${podcastData.description}</p>
+                
+                <div class="action-buttons">
+                    <button class="action-button">
+                        <i class="fas fa-play-circle"></i>
+                        <span>播放</span>
+                    </button>
+                    <button class="action-button">
+                        <i class="fas fa-heart"></i>
+                        <span>订阅</span>
+                    </button>
+                    <button class="action-button">
+                        <i class="fas fa-share-alt"></i>
+                        <span>分享</span>
+                    </button>
+                </div>
+            `;
+            contentContainer.appendChild(podcastHeader);
+            
+            // 创建剧集列表
+            const episodeListContainer = document.createElement('div');
+            episodeListContainer.className = 'episode-list';
+            
+            // 剧集列表标题
+            const episodeListTitle = document.createElement('h3');
+            episodeListTitle.className = 'section-title mt-4';
+            episodeListTitle.textContent = '剧集';
+            episodeListContainer.appendChild(episodeListTitle);
+            
+            // 添加剧集列表
+            if (podcastData.episodes && podcastData.episodes.length > 0) {
+                podcastData.episodes.forEach(episode => {
+                    const episodeItem = document.createElement('div');
+                    episodeItem.className = 'episode-item';
+                    episodeItem.innerHTML = `
+                        <div class="episode-title">${episode.title}</div>
+                        <div class="episode-date">${episode.date}</div>
+                        <div class="episode-description">${episode.description}</div>
+                        <div class="episode-duration">
+                            <i class="fas fa-clock"></i> ${episode.duration}
+                        </div>
+                    `;
+                    
+                    // 点击剧集跳转到播放器
+                    episodeItem.addEventListener('click', () => {
+                        window.location.href = `player.html?id=${episode.id}`;
+                    });
+                    
+                    episodeListContainer.appendChild(episodeItem);
+                });
+            } else {
+                const noEpisodes = document.createElement('p');
+                noEpisodes.textContent = '暂无剧集';
+                noEpisodes.className = 'text-gray-500 text-center py-8';
+                episodeListContainer.appendChild(noEpisodes);
+            }
+            
+            contentContainer.appendChild(episodeListContainer);
+            
+            // 添加按钮事件
+            const playButton = document.querySelector('.action-button:nth-child(1)');
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    // 播放最新一集
+                    if (podcastData.episodes && podcastData.episodes.length > 0) {
+                        const latestEpisode = podcastData.episodes[0];
+                        window.location.href = `player.html?id=${latestEpisode.id}`;
+                    }
+                });
+            }
+            
+            const subscribeButton = document.querySelector('.action-button:nth-child(2)');
+            if (subscribeButton) {
+                // 检查是否已订阅
+                const isSubscribed = window.mockData.userData.subscribed.includes(podcastId);
+                
+                // 更新订阅按钮状态
+                if (isSubscribed) {
+                    subscribeButton.innerHTML = `
+                        <i class="fas fa-heart" style="color: var(--accent-color);"></i>
+                        <span style="color: var(--accent-color);">已订阅</span>
+                    `;
+                }
+                
+                subscribeButton.addEventListener('click', () => {
+                    // 切换订阅状态
+                    const currentSubscribed = window.mockData.userData.subscribed;
+                    const index = currentSubscribed.indexOf(podcastId);
+                    
+                    if (index === -1) {
+                        // 添加订阅
+                        window.mockData.userData.subscribed.push(podcastId);
+                        subscribeButton.innerHTML = `
+                            <i class="fas fa-heart" style="color: var(--accent-color);"></i>
+                            <span style="color: var(--accent-color);">已订阅</span>
+                        `;
+                    } else {
+                        // 取消订阅
+                        window.mockData.userData.subscribed.splice(index, 1);
+                        subscribeButton.innerHTML = `
+                            <i class="fas fa-heart"></i>
+                            <span>订阅</span>
+                        `;
+                    }
+                });
+            }
+            
+            // 分享按钮
+            const shareButton = document.querySelector('.action-button:nth-child(3)');
+            if (shareButton) {
+                shareButton.addEventListener('click', () => {
+                    alert(`分享"${podcastData.title}"播客`);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

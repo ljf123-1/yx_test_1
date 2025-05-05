@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 个人主页</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: '小宇播客 - 个人主页',
+                activeTab: 'profile',
+                showMiniPlayer: true
+            });
+            
+            // 获取用户数据
+            const userData = window.mockData.userData;
+            
+            // 创建个人资料头部
+            const profileHeader = document.createElement('div');
+            profileHeader.className = 'profile-header';
+            profileHeader.innerHTML = `
+                <img src="${userData.avatar}" alt="用户头像" class="avatar">
+                <h2 class="username">${userData.username}</h2>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${userData.subscriptions}</div>
+                        <div class="stat-label">订阅</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${userData.favorites}</div>
+                        <div class="stat-label">收藏</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${userData.history}</div>
+                        <div class="stat-label">听过</div>
+                    </div>
+                </div>
+            `;
+            contentContainer.appendChild(profileHeader);
+            
+            // 创建内容选项卡
+            const contentTabs = document.createElement('div');
+            contentTabs.className = 'bg-white border-b border-gray-200';
+            contentTabs.innerHTML = `
+                <div class="flex">
+                    <button class="flex-1 py-3 font-medium text-indigo-600 border-b-2 border-indigo-600" data-tab="subscriptions">
+                        我的订阅
+                    </button>
+                    <button class="flex-1 py-3 font-medium text-gray-500" data-tab="history">
+                        收听历史
+                    </button>
+                    <button class="flex-1 py-3 font-medium text-gray-500" data-tab="downloads">
+                        下载管理
+                    </button>
+                </div>
+            `;
+            contentContainer.appendChild(contentTabs);
+            
+            // 创建内容容器
+            const tabContent = document.createElement('div');
+            tabContent.className = 'container tab-content-container';
+            contentContainer.appendChild(tabContent);
+            
+            // 渲染订阅内容
+            function renderSubscriptions() {
+                tabContent.innerHTML = '';
+                
+                if (userData.subscribed.length === 0) {
+                    tabContent.innerHTML = `
+                        <div class="text-center py-10">
+                            <i class="fas fa-podcast text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">你还没有订阅任何播客</p>
+                            <a href="discover.html" class="btn-primary inline-block mt-4">去探索</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 获取所有订阅的播客
+                const subscribedPodcasts = [];
+                userData.subscribed.forEach(id => {
+                    // 从推荐和热门播客中查找已订阅的播客
+                    const allPodcasts = window.mockData.recommendedPodcasts.concat(window.mockData.trendingPodcasts);
+                    const podcast = allPodcasts.find(p => p.id === id);
+                    if (podcast) {
+                        subscribedPodcasts.push(podcast);
+                    }
+                });
+                
+                // 创建订阅列表
+                const subscriptionsContainer = document.createElement('div');
+                subscriptionsContainer.className = 'mt-4';
+                
+                subscribedPodcasts.forEach(podcast => {
+                    const podcastCard = document.createElement('div');
+                    podcastCard.className = 'podcast-card';
+                    podcastCard.innerHTML = `
+                        <div class="flex p-3">
+                            <img src="${podcast.image}" alt="${podcast.title}" class="w-16 h-16 rounded-md object-cover">
+                            <div class="ml-3 flex-1">
+                                <h3 class="podcast-title">${podcast.title}</h3>
+                                <p class="text-sm text-gray-500">${podcast.author}</p>
+                                <div class="mt-2 flex justify-between items-center">
+                                    <span class="text-xs text-gray-500"><i class="fas fa-headphones mr-1"></i> ${podcast.listens}</span>
+                                    <button class="unsubscribe-btn text-xs text-gray-500" data-podcast-id="${podcast.id}">
+                                        <i class="fas fa-times-circle"></i> 取消订阅
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 添加点击事件
+                    podcastCard.addEventListener('click', function(e) {
+                        // 如果点击的不是取消订阅按钮，则跳转到详情页
+                        if (!e.target.closest('.unsubscribe-btn')) {
+                            window.location.href = `podcast-detail.html?id=${podcast.id}`;
+                        }
+                    });
+                    
+                    subscriptionsContainer.appendChild(podcastCard);
+                });
+                
+                tabContent.appendChild(subscriptionsContainer);
+                
+                // 添加取消订阅按钮事件
+                document.querySelectorAll('.unsubscribe-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const podcastId = parseInt(this.getAttribute('data-podcast-id'));
+                        
+                        // 从订阅列表中移除
+                        const index = userData.subscribed.indexOf(podcastId);
+                        if (index !== -1) {
+                            userData.subscribed.splice(index, 1);
+                            
+                            // 重新渲染订阅列表
+                            renderSubscriptions();
+                        }
+                    });
+                });
+            }
+            
+            // 渲染历史记录
+            function renderHistory() {
+                tabContent.innerHTML = '';
+                
+                if (userData.recentlyPlayed.length === 0) {
+                    tabContent.innerHTML = `
+                        <div class="text-center py-10">
+                            <i class="fas fa-history text-gray-300 text-5xl mb-4"></i>
+                            <p class="text-gray-500">还没有收听记录</p>
+                            <a href="home.html" class="btn-primary inline-block mt-4">去发现</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 创建历史记录列表
+                const historyContainer = document.createElement('div');
+                historyContainer.className = 'mt-4';
+                
+                userData.recentlyPlayed.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'podcast-card';
+                    historyItem.innerHTML = `
+                        <div class="flex p-3">
+                            <img src="${item.image}" alt="${item.title}" class="w-16 h-16 rounded-md">
+                            <div class="ml-3 flex-1">
+                                <h3 class="podcast-title line-clamp-1">${item.title}</h3>
+                                <p class="text-sm text-gray-500">${item.podcast}</p>
+                                <div class="mt-2 bg-gray-200 rounded-full h-1.5 w-full">
+                                    <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${item.progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 添加点击事件
+                    historyItem.addEventListener('click', function() {
+                        window.location.href = `player.html?id=${item.id}`;
+                    });
+                    
+                    historyContainer.appendChild(historyItem);
+                });
+                
+                tabContent.appendChild(historyContainer);
+            }
+            
+            // 渲染下载管理
+            function renderDownloads() {
+                tabContent.innerHTML = `
+                    <div class="text-center py-10">
+                        <i class="fas fa-download text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">暂无下载内容</p>
+                    </div>
+                `;
+            }
+            
+            // 默认渲染订阅内容
+            renderSubscriptions();
+            
+            // 添加选项卡切换事件
+            contentTabs.addEventListener('click', function(e) {
+                if (e.target.hasAttribute('data-tab')) {
+                    // 移除所有active样式
+                    contentTabs.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                        btn.classList.add('text-gray-500');
+                    });
+                    
+                    // 添加active样式
+                    e.target.classList.remove('text-gray-500');
+                    e.target.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                    
+                    // 根据tab渲染内容
+                    const tabName = e.target.getAttribute('data-tab');
+                    switch (tabName) {
+                        case 'subscriptions':
+                            renderSubscriptions();
+                            break;
+                        case 'history':
+                            renderHistory();
+                            break;
+                        case 'downloads':
+                            renderDownloads();
+                            break;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

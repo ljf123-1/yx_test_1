@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小宇播客 - 首页</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- 页面内容会通过JavaScript动态加载 -->
+    
+    <script src="../components/ios-components.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面结构
+            const contentContainer = window.iosComponents.initPageStructure({
+                title: '小宇播客 - 首页',
+                activeTab: 'home',
+                showMiniPlayer: true
+            });
+
+            // 创建主页内容
+            const homeContent = document.createElement('div');
+            homeContent.className = 'container';
+            
+            // 添加问候语
+            const greetingSection = document.createElement('div');
+            greetingSection.className = 'mt-4';
+            
+            // 获取当前小时并设置问候语
+            const now = new Date();
+            const hour = now.getHours();
+            let greeting = '';
+            
+            if (hour < 12) {
+                greeting = '早上好';
+            } else if (hour < 18) {
+                greeting = '下午好';
+            } else {
+                greeting = '晚上好';
+            }
+            
+            greetingSection.innerHTML = `
+                <h1 class="text-2xl font-bold text-gray-800">${greeting}，播客爱好者</h1>
+                <p class="text-gray-600 mt-1">今天想听点什么？</p>
+            `;
+            homeContent.appendChild(greetingSection);
+            
+            // 添加最近播放的内容
+            const recentlyPlayedSection = document.createElement('div');
+            recentlyPlayedSection.className = 'mt-6';
+            recentlyPlayedSection.innerHTML = `
+                <h2 class="section-title">最近收听</h2>
+                <div class="recently-played-container">
+                    ${window.mockData.userData.recentlyPlayed.map(item => `
+                        <div class="podcast-card" onclick="window.location.href='player.html?id=${item.id}'">
+                            <div class="flex p-3">
+                                <img src="${item.image}" alt="${item.title}" class="w-16 h-16 rounded-md">
+                                <div class="ml-3 flex-1">
+                                    <h3 class="podcast-title text-sm line-clamp-1">${item.title}</h3>
+                                    <p class="text-xs text-gray-500">${item.podcast}</p>
+                                    <div class="mt-2 bg-gray-200 rounded-full h-1.5 w-full">
+                                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${item.progress}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            homeContent.appendChild(recentlyPlayedSection);
+
+            // 添加推荐播客
+            const recommendedSection = document.createElement('div');
+            recommendedSection.className = 'mt-6';
+            recommendedSection.innerHTML = `
+                <h2 class="section-title">为你推荐</h2>
+                <div class="recommended-podcasts">
+                    ${window.mockData.recommendedPodcasts.map(podcast => `
+                        <div class="podcast-card" onclick="window.location.href='podcast-detail.html?id=${podcast.id}'">
+                            <img src="${podcast.image}" alt="${podcast.title}" class="podcast-image">
+                            <div class="podcast-content">
+                                <h3 class="podcast-title">${podcast.title}</h3>
+                                <p class="podcast-description">${podcast.description}</p>
+                                <div class="podcast-meta">
+                                    <span>${podcast.author}</span>
+                                    <span><i class="fas fa-headphones"></i> ${podcast.listens}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            homeContent.appendChild(recommendedSection);
+            
+            // 添加热门播客
+            const trendingSection = document.createElement('div');
+            trendingSection.className = 'mt-6';
+            trendingSection.innerHTML = `
+                <h2 class="section-title">热门节目</h2>
+                <div class="trending-podcasts">
+                    ${window.mockData.trendingPodcasts.map(podcast => `
+                        <div class="podcast-card" onclick="window.location.href='podcast-detail.html?id=${podcast.id}'">
+                            <img src="${podcast.image}" alt="${podcast.title}" class="podcast-image">
+                            <div class="podcast-content">
+                                <h3 class="podcast-title">${podcast.title}</h3>
+                                <p class="podcast-description">${podcast.description}</p>
+                                <div class="podcast-meta">
+                                    <span>${podcast.author}</span>
+                                    <span><i class="fas fa-headphones"></i> ${podcast.listens}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            homeContent.appendChild(trendingSection);
+            
+            // 添加主页内容到容器
+            contentContainer.appendChild(homeContent);
+        });
+    </script>
+</body>
+</html> 
